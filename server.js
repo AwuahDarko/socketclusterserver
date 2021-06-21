@@ -102,7 +102,10 @@ var httpServer = http.createServer();
 httpServer.on('request', app);
 
 // Attach socketcluster-server to our httpServer
-var scServer = socketClusterServer.attach(httpServer);
+var scServer = socketClusterServer.attach(httpServer, {
+      protocolVersion: 1,
+    path: '/socketcluster/'
+});
 
 scServer.on('connection', function (socket) {
   // ... Handle new socket connections here
