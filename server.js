@@ -29,8 +29,8 @@ const PORT = process.env.PORT || 8000;
 
 const server = https.createServer(
   {
-    key: fs.readFileSync('/etc/letsencrypt/live/ulsorb.com/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/ulsorb.com/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/?/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/?/fullchain.pem'),
   },
   app
 )
@@ -39,9 +39,6 @@ const server = https.createServer(
   });
 
 // app.enable('trust proxy');
-
-
-// server.on('request', app);
 
 // ? =========================================
 // ? ##################################
@@ -61,20 +58,16 @@ var scServer = socketClusterServer.attach(server, {
 
 
 scServer.on('connection', function (socket) {
-  // console.log('was connected', socket.id)
 
   socket.on('message', (data) => {
     try {
-      // console.log('yellow', data)
+
       const yellow = JSON.parse(data)
       const message = yellow.data;
 
-      // console.log('message.channel', message.channel)
-      // console.log('message.data', message.data)
-
       scServer.exchange.publish(message.channel, JSON.stringify(message.data));
     } catch (error) {
-      // console.log('json parse error --->', error)
+
     }
   })
 });
@@ -84,9 +77,12 @@ app.post('/socketserver/publish', (req, res) => {
 
   const { channelName, data } = req.body;
 
-  scServer.exchange.publish(channelName, JSON.stringify(data));
+  try {
+    scServer.exchange.publish(channelName, JSON.stringify(data));
+    res.status(200).json({ message: 'Sent' })
+  } catch (error) {
 
-  res.status(200).json({ message: 'Sent' })
+  }
 })
 
 
