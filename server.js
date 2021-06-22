@@ -1,5 +1,6 @@
 
 var http = require('http');
+const fs = require('fs');
 const https = require('https');
 var socketClusterServer = require('socketcluster-server');
 var serveStatic = require('serve-static');
