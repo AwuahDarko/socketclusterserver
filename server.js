@@ -40,6 +40,8 @@ const server = https.createServer(
 
 app.enable('trust proxy');
 
+server.on('request', app);
+
 // ? =========================================
 // ? ##################################
 // ? ##################################
