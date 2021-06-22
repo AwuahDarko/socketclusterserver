@@ -69,8 +69,8 @@ scServer.on('connection', function (socket) {
       const yellow = JSON.parse(data)
       const message = yellow.data;
 
-      console.log('message.channel', message.channel)
-      console.log('message.data', message.data)
+      // console.log('message.channel', message.channel)
+      // console.log('message.data', message.data)
 
       scServer.exchange.publish(message.channel, JSON.stringify(message.data));
     } catch (error) {
