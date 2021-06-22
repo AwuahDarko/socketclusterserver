@@ -40,6 +40,7 @@ const server = https.createServer(
 
 // app.enable('trust proxy');
 
+
 // server.on('request', app);
 
 // ? =========================================
@@ -73,7 +74,7 @@ scServer.on('connection', function (socket) {
 
       scServer.exchange.publish(message.channel, JSON.stringify(message.data));
     } catch (error) {
-      console.log('json parse error --->', error)
+      // console.log('json parse error --->', error)
     }
   })
 });
