@@ -1,136 +1,91 @@
 
-
-// var http = require('http');
-// var socketClusterServer = require('socketcluster-server');
-
-// var httpServer = http.createServer();
-// var scServer = socketClusterServer.attach(httpServer, {
-//     protocolVersion: 1,
-//     path: '/socketcluster/'
-// });
-
-// const connections = []
-
-// scServer.on('connection', function (socket) {
-//     // ... Handle new socket connections here
-//     connections.push(socket)
-
-//     console.log('was connected', connections.length)
-//     console.log('was connected', socket.id)
-
-//     // setTimeout(() => {
-//     //     console.log('sending....')
-//     //     scServer.exchange.publish('RETAILER_1', "Hello world");
-//     // }, 5000)
-//     // socket.on('RETAILER_1', function (data) {
-//     //     // count++;
-//     //     console.log('PING', data);
-//     //     scServer.exchange.publish('RETAILER_1', data);
-//     //   });
-//     // scServer.on('RETAILER_', (data, res) => {
-//     //     console.log('on subscribe', data)
-//     //     console.log('on res', res)
-//     //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-//     // })
-
-//     // scServer.on('#publish', (sub) => {
-//     //     console.log('on #publish', sub)
-//     //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-//     // })
-
-//     // scServer.on('publish', (sub) => {
-//     //     console.log('on publish1', sub)
-//     //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-//     // })
-
-
-//     socket.on('RETAILER_', (sub) => {
-//         console.log('on publish', sub)
-//         scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-//     })
-
-//     socket.on('amen', (sub) => {
-//         console.log('on amen', sub)
-//         // scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-//     })
-// });
-
-
-// scServer.on('amen', (sub) => {
-//     console.log('on publish', sub)
-//     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-// })
-
-// // scServer.on('#publish', (sub) => {
-// //     console.log('on publish', sub)
-// //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-// // })
-
-// // scServer.on('message', (sub) => {
-// //     console.log('on publish', sub)
-// //     // scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-// // })
-
-// // scServer.on('ping', (sub) => {
-// //     console.log('on publish', sub)
-// //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-// // })
-// // scServer.on('publish', (sub) => {
-// //     console.log('on message in', sub)
-// //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-// // })
-
-// // scServer.on('message', (sub) => {
-// //     console.log('on message out', sub)
-// //     scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-// // })
-
-// httpServer.listen(8000);
-
-
 var http = require('http');
+const https = require('https');
 var socketClusterServer = require('socketcluster-server');
 var serveStatic = require('serve-static');
 var path = require('path');
-var app = require('express')();
+const bodyparser = require('body-parser');
+const app = require('express')();
 
 app.use(serveStatic(path.resolve(__dirname, 'public')));
 
-var httpServer = http.createServer();
 
-// Attach express to our httpServer
-httpServer.on('request', app);
 
-// Attach socketcluster-server to our httpServer
-var scServer = socketClusterServer.attach(httpServer, {
-      protocolVersion: 1,
-    path: '/socketcluster/'
-});
+// ? ====== FOR HTTP CONFIG =========
 
-scServer.on('connection', function (socket) {
-  // ... Handle new socket connections here
+// var server = http.createServer();
+// server.on('request', app);
 
-    //   console.log('was connected', connections.length)
-    console.log('was connected', socket.id)
+// ? ================================
 
-        socket.on('RETAILER_1', (sub) => {
-        console.log('on amen', sub)
-        // scServer.exchange.publish('RETAILER_1', "Hello world ooooooooo");
-    })
+// ? ##################################
+// ? ##################################
+// ? ##################################
+// ? ##################################
 
-    socket.on('message', (yellow) =>{
-        console.log('yellow', yellow)
-    })
-});
+// ? ====  FOR HTTPS CONFIG ==================
 
-scServer.on('message', function (socket) {
-    // ... Handle new socket connections here
-  
-      //   console.log('was connected', connections.length)
-      console.log('was connected', socket)
-
+const server = https.createServer(
+  {
+    key: fs.readFileSync('/etc/letsencrypt/live/ulsorb.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/ulsorb.com/fullchain.pem'),
+  },
+  app
+)
+  .listen(PORT, function () {
+    console.log(`Server started on port ${PORT}`);
   });
 
-// console.log(scServer)
+app.enable('trust proxy');
+
+// ? =========================================
+// ? ##################################
+// ? ##################################
+// ? ##################################
+
+
+app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
+app.use(bodyparser.json());
+
+
+// Attach socketcluster-server to our httpServer
+var scServer = socketClusterServer.attach(server, {
+  protocolVersion: 1,
+  path: '/socketcluster/'
+});
+
+
+scServer.on('connection', function (socket) {
+  // console.log('was connected', socket.id)
+
+  socket.on('message', (data) => {
+    try {
+      // console.log('yellow', data)
+      const yellow = JSON.parse(data)
+      const message = yellow.data;
+
+      console.log('message.channel', message.channel)
+      console.log('message.data', message.data)
+
+      scServer.exchange.publish(message.channel, JSON.stringify(message.data));
+    } catch (error) {
+      console.log('json parse error --->', error)
+    }
+  })
+});
+
+
+app.post('/socketserver/publish', (req, res) => {
+
+  const { channelName, data } = req.body;
+
+  scServer.exchange.publish(channelName, JSON.stringify(data));
+
+  res.status(200).json({ message: 'Sent' })
+})
+
 
 httpServer.listen(8000);
+
+
+
