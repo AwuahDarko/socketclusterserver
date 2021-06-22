@@ -38,9 +38,9 @@ const server = https.createServer(
     console.log(`Server started on port ${PORT}`);
   });
 
-app.enable('trust proxy');
+// app.enable('trust proxy');
 
-server.on('request', app);
+// server.on('request', app);
 
 // ? =========================================
 // ? ##################################
