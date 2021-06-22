@@ -10,12 +10,13 @@ const app = require('express')();
 
 app.use(serveStatic(path.resolve(__dirname, 'public')));
 
-
+const PORT = process.env.PORT || 8000;
 
 // ? ====== FOR HTTP CONFIG =========
 
 // var server = http.createServer();
 // server.on('request', app);
+// server.listen(8000);
 
 // ? ================================
 
@@ -86,7 +87,7 @@ app.post('/socketserver/publish', (req, res) => {
 })
 
 
-httpServer.listen(8000);
+
 
 
 
