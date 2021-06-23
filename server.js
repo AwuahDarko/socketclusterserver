@@ -29,8 +29,8 @@ const PORT = process.env.PORT || 8000;
 
 const server = https.createServer(
   {
-    key: fs.readFileSync('/etc/letsencrypt/live/?/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/?/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/dreamerslake.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/dreamerslake.com/fullchain.pem'),
   },
   app
 )
