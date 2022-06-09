@@ -58,7 +58,7 @@ var scServer = socketClusterServer.attach(server, {
 
 
 scServer.on('connection', function (socket) {
-
+  console.log("connected", socket)
   socket.on('message', (data) => {
     try {
 
@@ -67,7 +67,7 @@ scServer.on('connection', function (socket) {
 
       scServer.exchange.publish(message.channel, JSON.stringify(message.data));
     } catch (error) {
-
+      console.log(error)
     }
   })
 });
@@ -77,11 +77,13 @@ app.post('/socketserver/publish', (req, res) => {
 
   const { channelName, data } = req.body;
 
+  console.log(channelName, data)
+
   try {
     scServer.exchange.publish(channelName, JSON.stringify(data));
     res.status(200).json({ message: 'Sent' })
   } catch (error) {
-
+    console.log(error.message)
   }
 })
 
